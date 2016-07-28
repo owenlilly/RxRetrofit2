@@ -36,14 +36,16 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(new CountryRecyclerAdapter());
 
+        loadCountriesIntoAdapter((CountryRecyclerAdapter) recyclerView.getAdapter());
+    }
+
+    private void loadCountriesIntoAdapter(CountryRecyclerAdapter adapter){
         RxHttpServiceFactory.travelBriefing()
-                            .getCountries()
+                            .getCountries() // makes request on Schedulers.io() by default
                             .retry(2)
                             .observeOn(AndroidSchedulers.mainThread())
                             .flatMap(Observable::from)
-                            .subscribe(country -> {
-                                ((CountryRecyclerAdapter)recyclerView.getAdapter()).appendCountry(country);
-                            }, Throwable::printStackTrace);
+                            .subscribe(adapter::appendCountry, Throwable::printStackTrace);
     }
 
     static class CountryRecyclerAdapter extends RecyclerView.Adapter<CountryRecyclerAdapter.CountryViewHolder> {
